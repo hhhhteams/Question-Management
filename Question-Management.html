@@ -1,0 +1,320 @@
+﻿<script src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/Style%20Library/js/angular/Question%20Management/Question-Management.js?updated=31082020"></script>
+<script src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/Style%20Library/js/angular/Templates/HHHH-EditSharewebItem.js"></script>
+<script type="text/javascript" src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/Style%20Library/js/angular/Services/froala_editor.pkgd.min.js"></script>
+<script src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/Style%20Library/js/angular/Services/alasql.min.js"></script>
+
+<style>
+    .displayLabel {
+        display: none;
+    }
+.questionpopups .page-content{margin-right: 0px !important;}
+.page-content {
+        width: auto !important;
+        margin-right: 60px !important;
+        height: auto !important;
+        margin-left: -25px !important;
+    }
+
+    .table .glyphicon, .table .glyphicon_active {
+        right: auto;
+    }
+    #FAQsItem.fr-box.fr-basic.fr-top{z-index: 1!important;}
+</style>
+<div class="" ng-controller="QuestionManagementController">
+    <div class="" ng-cloak>
+        <div class="panel-body">
+            <div class="row Doc-align">
+                <div class="col-sm-2">
+                    <label> Search Questions : </label>
+                </div>
+                <div class="col-sm-4 PadR0 padL-0">
+                    <input id="search" type="search" ng-model="search" placeholder="Search all..." class="form-control searchbox_height">
+                    <span ng-show="search.length>0" class="searchclear" ng-click="clearControl('searchinput')">X</span>
+                </div>
+                <div class="col-sm-2">
+                    <label> <span> Showing </span> {{filtered.length}} </label> <label>
+                        <span>
+                            Of
+                        </span> {{FilteredQuestion.length}}
+                    </label> <label>Question</label>
+                </div>
+                <div class="col-sm-2"> <a class="hreflink" ng-href="" ng-click="addQuestion()"><!--Add Question--></a></div>
+                <div class="col-sm-1 no-padding clear-all mtop5">
+                    <a data-ng-click="ClearFilters()" class="hreflink pull-right">
+                        <label ng-bind-html="GetColumnDetails('ClearAll') | trustedHTML"></label> <img ng-src="/_layouts/images/delete.gif">
+                    </a>
+                </div>
+                <div class="col-sm-1 print-icon">
+                    <img class="pull-right hreflink" ng-src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/SiteCollectionImages/ICONS/24/icon_Printer.png" ng-click="printResults()" />
+                    <img class="pull-right hreflink" ng-src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/SiteCollectionImages/ICONS/24/icon_excel.png" ng-click="exportToExcel()" />
+                </div>
+            </div>
+            <div id="table-wrapper" class="section-event pt-0">
+                <ul id="documents" class="table table-fixed table-hover" width="100%" style="display: contents;">
+                    <li class="for-lis" style="display: flex;">
+                        <div style="width:2%;" class="display_hide">
+                            <div style="width:80%;">
+                                <a class="hreflink" ng-show="ExpandAndCollapse"
+                                   ng-click="ExpandAndCollapseAll()">
+                                    <img style="width:10px;"
+                                         src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/SiteCollectionImages/ICONS/24/right-list-icon.png">
+                                </a>
+                                <a class="hreflink" ng-show="!ExpandAndCollapse"
+                                   ng-click="ExpandAndCollapseAll()">
+                                    <img style="width:10px;" src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/SiteCollectionImages/ICONS/24/list-icon.png">
+                                </a>
+                            </div>
+                        </div>
+                        <div style="width:65%;" id="searchName" class="display_hide">
+                            <div style="width:97%;" class="displayLabel">
+                                <label ng-bind-html="GetColumnDetails('FileLeafRef')"></label>
+                            </div>
+                            <div style="width:95%" class="headcontainer">
+                                <input type="text" id="searchName" placeholder="Search Question"
+                                       class="width-90 searchbox_height mr-5" ng-model="searchName" />
+                                <span ng-show="searchName.length>0" class="searchclear" ng-click="clearControl('searchName')">X</span>
+                                <span class="{{orderBy=='Title'&&!reverse?'glyphicon_active':'glyphicon'}}  glyphicon-chevron-up direction-arrow arrow_up"
+                                      ng-click="sortBy('Title', false)"></span>
+                                <span class="{{orderBy=='Title'&&reverse?'glyphicon_active':'glyphicon'}}  glyphicon-chevron-down direction-arrow arrow_down"
+                                      ng-click="sortBy('Title', true)"></span>
+                            </div>
+                        </div>
+
+
+                        <div style="width:25%;" id="searchCreatedBy" class="display_hide">
+                            <div style="width:90%;" class="displayLabel">
+                                <label>Component Name</label>
+                            </div>
+                            <div style="width:80%;" class="headcontainer">
+                                <input type="text" id="searchComponentTitle" placeholder="Component Name"
+                                       class="width-90 searchbox_height mr-5" ng-model="searchComponentTitle" />
+                                <span ng-show="searchComponentTitle.length>0" class="searchclear" ng-click="clearControl('searchComponentTitle')">X</span>
+                                <span class="{{orderBy=='ComponentsItemTitle'&&!reverse?'glyphicon_active':'glyphicon'}}  glyphicon-chevron-up direction-arrow arrow_up"
+                                      ng-click="sortBy('ComponentsItemTitle', false)"></span>
+
+                                <span class="{{orderBy=='ComponentsItemTitle'&&reverse?'glyphicon_active':'glyphicon'}}  glyphicon-chevron-down direction-arrow arrow_down"
+                                      ng-click="sortBy('ComponentsItemTitle', true)"></span>
+                            </div>
+                        </div>
+                        <div style="width:14%;" id="searchCreated" class="display_hide">
+                            <div style="width:90%;" class="displayLabel">
+                                <label ng-bind-html="GetColumnDetails('ModifiedDate')"></label>
+                            </div>
+                            <div style="width:80%;" class="headcontainer">
+                                <input type="text" id="searchModifieddate " placeholder="Modified Date"
+                                       class="width-90 searchbox_height mr-5" ng-model="searchModifieddate" />
+                                <span ng-show="searchModifieddate.length>0" class="searchclear" ng-click="clearControl('searchModifieddate')">X</span>
+                                <span class="{{orderBy=='ModifiedDate'&&!reverse?'glyphicon_active':'glyphicon'}}  glyphicon-chevron-up direction-arrow arrow_up"
+                                      ng-click="sortBy('ModifiedDate', false)"></span>
+
+                                <span class="{{orderBy=='ModifiedDate'&&reverse?'glyphicon_active':'glyphicon'}}  glyphicon-chevron-down direction-arrow arrow_down"
+                                      ng-click="sortBy('ModifiedDate', true)"></span>
+                            </div>
+                        </div>
+                        <div style="width:2%;" class="display_hide">
+                            <div style="width:80%;"></div>
+                        </div>
+                        <div style="width:2%;" class="display_hide">
+                            <div style="width:80%;"></div>
+                        </div>
+                    </li>
+
+                    <div class="container-new">
+                        <li class="tdrows for-lis {{item.PortfolioType=='Service'?'taskprofilepagegreen':''}}"
+                            ng-repeat-start="item in filtered = (FilteredQuestion | filter:search | orderBy:orderBy:reverse
+                                            | filter:{Modified:searchModifieddate,Editor:searchmodifiedby,Title:searchName,Author:searchcreatedby,Answer:searchAnswer,ComponentsItemTitle:searchComponentTitle})" style="display:flex;">
+                            <div class="display_hide padLR" style="width:3%;">
+                                <span class="icontype display_hide" ng-if="item.Answer!=undefined">
+                                    <a class="flag_icon" ng-if="item.expanded" ng-click="item.expanded = false"> <img style="margin-top:-5px; margin-right:4px;" ng-src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/SiteCollectionImages/ICONS/24/list-icon.png"></a>
+                                    <a class="flag_icon" ng-if="!item.expanded" ng-click="item.expanded = true"><img style="margin-top:-5px; margin-right:4px;" ng-src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/SiteCollectionImages/ICONS/24/right-list-icon.png"> </a>
+                                </span>
+                            </div>
+                            <div class="display_hide padLR" style="width:64%;">
+                                <div class="name">
+                                    {{item.Title}}
+
+
+                                </div>
+                            </div>
+                            <div class="display_hide padLR" style="width:25%;">
+                                <span ng-if="item.ComponentsItemId!=undefined">
+                                    <a ng-href="{{baseUrl}}/SitePages/Portfolio-Profile.aspx?taskId={{item.ComponentsItemId}}" target="_blank">{{item.ComponentsItemTitle}}</a>
+                                </span>
+                                <!--<span ng-if="item.ServiceItemId!=undefined">
+                                    <a ng-href="{{baseUrl}}/SitePages/Portfolio-Profile.aspx?taskId={{item.ServiceItemId}}" target="_blank">{{item.ServiceItemTitle}}</a>
+                                </span>-->
+                                <!--<span ng-if="item.ComponentsItemId==undefined">
+                                    {{item.ComponentsItemTitle}}
+                                </span>-->
+                            </div>
+                            <!--<div class="display_hide padLR" style="width:16%;">{{item.Editor.Title}}</div>-->
+                            <div class="display_hide padLR" style="width:13%;">{{item.Modified}}</div>
+
+                            <div class="icontype display_hide padLR" style="width:2%;">
+                                <a ng-if="item.siteType == item.siteType " class="hreflink"
+                                   ng-click="updateQuestion(item)">
+                                    <img ng-src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/_layouts/images/edititem.gif">
+                                </a>
+                            </div>
+                            <div class="icontype display_hide padLR" style="width:2%;">
+                                <a class="hreflink"
+                                   title="Delete">
+                                    <img data-ng-click="removeItem(item)"
+                                         ng-src="https://hhhhteams.sharepoint.com/sites/HHHHTeams/_layouts/images/delete.gif">
+                                </a>
+                            </div>
+                        </li>
+                        <li ng-show="item.expanded" class=" active {{item.PortfolioType=='Service'?'taskprofilepagegreen':''}}" ng-repeat-end>
+                            <ul class="table">
+                                <li class="tdrows for-lis"
+                                    ng-repeat="type in item.showAnswer">
+                                    <div class="display_hide padLR" style="width:3%;"></div>
+                                    <div class="display_hide padLR" style="width:80%;">{{type.QuestionAnswer}}</div>
+                                </li>
+                            </ul>
+                        </li>
+                    </div>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="AddFAQSItem" class="modal {{PortfolioType=='Service'?'taskprofilepagegreen':''}}">
+        <div class="modal-dialog modal-help">
+            <div class="panel panel-default">
+                <div class="panel-title">
+                    <h3 class="mb-0">
+                        Question
+
+                        <button type="button" class="close" ng-click="CancelFAQsItem()" style="min-width: 10px;">×</button>
+                        <span class="pull-right questionpopups">
+                            <page-settings-info webpartid="'editQuestionsPopup'"></page-settings-info>
+                        </span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <ng-form name="siteOwnerForm" novalidate="" role="form" class="ng-pristine ng-valid">
+
+                        <div class="col-sm-12 tab-content bdrbox">
+                            <div class="involve_actor">
+                                <div class="tmvalue impact-infoI">
+                                    Question
+                                </div>
+                                <div class="tlvalue impact-infoII">{{Items.Title}}</div>
+                            </div>
+                            <div class="involve_actor">
+                                <div class="tmvalue impact-infoI">
+                                    Permission
+                                </div>
+                                <div class="tlvalue impact-infoII">
+                                    <span ng-repeat="item in PermissionChoiceData" style="margin-bottom:2px;margin-right:36px;">
+                                        <input type="radio" name="Permission" id="{{item}}" value="{{item}}" class="form-check-input" ng-click="addPermission(item)" ng-model="Items.Permission" style="margin-right:5px" disabled />{{item}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="involve_actor">
+                                <div class="tmvalue impact-infoI">
+                                    Status
+                                </div>
+                                <div class="tlvalue impact-infoII">
+                                    <span style="margin-bottom:2px;margin-right:44px;" ng-repeat=" item in QuestionStatus">
+                                        <input style="margin-right:5px" class="form-check-input"
+                                               ng-checked="item == Items.QuestionStatus"
+                                               name="radio" type="radio"
+                                               ng-click="setQuestion(item)"
+                                               value="{{item}}"
+                                               ng-model="Items.QuestionStatus">{{item}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="involve_actor">
+                                <div class="tmvalue impact-infoI">
+                                    Answer<span class="required"></span>
+                                </div>
+                                <div class="tlvalue impact-infoII" ng-form="validation">
+                                    <div id="FAQsItem"></div>
+
+                                </div>
+
+                                <!--<div class="clearfix"></div>-->
+                            </div>
+
+                            <div class="involve_actor" ng-show="PortfolioType=='Component'">
+                                <div class="tmvalue impact-infoI">
+                                    Component<span class="required"></span>
+                                </div>
+                                <div ng-show="smartComponent.length==0" class="tlvalue impact-infoIII">
+                                    Select Component
+                                </div>
+                                <div class="tlvalue impact-infoIII" ng-repeat="item in smartComponent">
+                                    <a class="hreflink" target="_blank" ng-href="https://hhhhteams.sharepoint.com/sites/HHHHTeams/sp/SitePages/Portfolio-Profile.aspx?taskId={{item.Id}}">{{item.Title}}</a>
+                                    <a class="hreflink" ng-click="removeSmartComponent(item.Id)">
+                                        <img ng-src="/_layouts/images/delete.gif">
+                                    </a>
+                                </div>
+                                <div class="col-md-1 mt-10  no-padding">
+                                    <img ng-src="https://www.shareweb.ch/_layouts/15/images/EMMCopyTerm.png" ng-click="EditComponent('Components');">
+                                </div>
+                            </div>
+                            <div class="involve_actor" ng-show="PortfolioType=='Service'">
+                                <div class="tmvalue impact-infoI">
+                                    Service<span class="required"></span>
+                                </div>
+                                <div ng-show="smartService.length==0" class="tlvalue impact-infoIII">
+                                    Select Service
+                                </div>
+                                <div class="tlvalue impact-infoIII" ng-repeat="item in smartService">
+                                    <a class="hreflink" target="_blank" ng-href="https://hhhhteams.sharepoint.com/sites/HHHHTeams/sp/SitePages/Portfolio-Profile.aspx?taskId={{item.Id}}">{{item.Title}}</a>
+                                    <a class="hreflink" ng-click="removeSmartService(item.Id)">
+                                        <img ng-src="/_layouts/images/delete.gif">
+                                    </a>
+                                </div>
+                                <div class="col-md-1 mt-10  no-padding">
+                                    <img ng-src="https://www.shareweb.ch/_layouts/15/images/EMMCopyTerm.png" ng-click="EditComponent('Services');">
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </ng-form>
+                </div>
+                <div class="ItemInfo">
+                    <div>
+                        Created <span>{{Items.CreatedDate}}</span> by <span class="footerUsercolor">{{Items.Author.Title}}</span>
+                    </div>
+                    <div>
+                        Last modified <span>{{Items.modifiedDate}}</span> by <span class="footerUsercolor">{{Items.Editor.Title}}</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                   
+                    <a class="hreflink" target="_blank" ng-href="https://hhhhteams.sharepoint.com/sites/HHHHTeams/Lists/SmartHelp/EditForm.aspx?ID={{Items.Id}}">Open out-of-the-box form</a>
+                    <button type="button" class="btn btn-primary" ng-disabled="validation.$error.required" ng-click="UpdateFAQSQuestion()">Submit</button>
+                    <button type="button" class="btn btn-default" ng-click="CancelFAQsItem()" title="Discard unsaved changes &amp; exit">Cancel</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="add_question_id" class="modal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <input type="text" class="form-control" placeholder="Title" ng-model="question_title" />
+                <br><a href="" class="btn btn-basic" ng-click="submitQuestion(question_title)">Add</a>
+                <a href="" class="btn btn-basic" ng-click="removeAddPopup()">Cancel</a>
+            </div>
+        </div>
+    </div>
+    <div id="update_question_id" class="modal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <input type="text" class="form-control" placeholder="Title" ng-model="updateItem.Title" /><br>
+                <input type="textarea" class="form-control" placeholder="Enter Description" ng-model="updateItem.Description" />
+                <br><a href="" class="btn btn-basic" ng-click="updatesubmitQuestion(updateItem)">Update</a>
+                <a href="" class="btn btn-basic" ng-click="removeUpdatePopup()">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
